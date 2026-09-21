@@ -1,0 +1,36 @@
+# TitlebarDemo — regenerate the Xcode project with `xcodegen` (brew install xcodegen).
+# The .xcodeproj is not committed; this file is the source of truth.
+name: TitlebarDemo
+options:
+  bundleIdPrefix: com.rsalesas.toolbarkit
+  deploymentTarget:
+    macOS: "15.0"
+packages:
+  ToolbarKit:
+    path: ../..
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+    ENABLE_HARDENED_RUNTIME: NO
+    ENABLE_APP_SANDBOX: NO
+    GENERATE_INFOPLIST_FILE: YES
+    INFOPLIST_KEY_CFBundleDisplayName: TitlebarDemo
+    INFOPLIST_KEY_NSPrincipalClass: NSApplication
+    MARKETING_VERSION: "0.1"
+    CURRENT_PROJECT_VERSION: "1"
+targets:
+  TitlebarDemo:
+    type: application
+    platform: macOS
+    sources:
+      - path: TitlebarDemo
+    dependencies:
+      - package: ToolbarKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.rsalesas.toolbarkit.TitlebarDemo
+        PRODUCT_NAME: TitlebarDemo
