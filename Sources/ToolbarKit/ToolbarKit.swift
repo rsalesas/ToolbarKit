@@ -3,5 +3,5 @@
 ///
 /// Start with `View.titlebar(_:background:separator:content:)`.
 public enum ToolbarKit {
-    public static let version = "0.1.1"
+    public static let version = "0.1.2"
 }

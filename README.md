@@ -91,7 +91,7 @@ ContentView()
 Swift Package Manager:
 
 ```swift
-.package(url: "https://github.com/rsalesas/ToolbarKit.git", from: "0.1.1")
+.package(url: "https://github.com/rsalesas/ToolbarKit.git", from: "0.1.2")
 ```
 
 ## Demo
@@ -105,10 +105,11 @@ open Examples/TitlebarDemo/build/TitlebarDemo.app
 
 ## Status
 
-Version 0.1.1, macOS only. It has been checked on macOS 27, including with real mouse input:
+Version 0.1.2, macOS only. It has been checked on macOS 27, including with real mouse input:
 - clicks in the bar reach your views;
 - dragging the bar moves the window, and double-clicking it zooms;
 - the window buttons work, including full screen;
+- in full screen the bar sits at the top of the screen and its controls take clicks, and leaving full screen restores it with the window buttons;
 - live resizing shows no lag.
 
 Not yet checked:
