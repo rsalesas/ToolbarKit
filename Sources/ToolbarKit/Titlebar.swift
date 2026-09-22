@@ -77,6 +77,8 @@ private struct TitlebarTitleModifier: ViewModifier {
             .font(.system(size: size.titlePointSize, weight: size.titleWeight))
             .lineLimit(1)
             .opacity(appearsActive ? 1 : 0.5)
+            // The title is part of the bar you drag the window by.
+            .allowsHitTesting(false)
     }
 }
 
@@ -87,55 +89,48 @@ private struct TitlebarModifier<Bar: View>: ViewModifier {
     let bar: Bar
 
     @State private var metrics = TitlebarMetrics()
+    @Environment(\.self) private var environment
 
     func body(content: Content) -> some View {
         // The content keeps the safe area macOS gives it, which is the
-        // titlebar's height; the bar fills exactly that band above it.
+        // titlebar's height. The bar's background and separator are drawn in
+        // that band from here; its content lives in the titlebar itself (see
+        // `WindowObserverView.barHost`), carrying this view's environment.
         content
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .overlay(alignment: .top) {
-                barView
+                barBackground
                     .frame(height: metrics.height)
                     .offset(y: -metrics.height)
+                    .allowsHitTesting(false)
             }
-            .background(WindowConfigurator(size: size) { metrics = $0 })
+            .background(WindowConfigurator(size: size, bar: AnyView(barContent.environment(\.self, environment))) { metrics = $0 })
     }
 
-    private var barView: some View {
+    private var barContent: some View {
         HStack(spacing: 8) {
             bar
         }
-        // No `.opacity` here to dim the bar when the window is inactive. SwiftUI
-        // draws the AppKit views under a partly transparent view (segmented
-        // pickers, text fields, bordered buttons) through a layer of its own and
-        // then never hit-tests them, so they stopped taking clicks. System
-        // controls draw their own inactive look; `titlebarTitle()` and the
-        // `.titlebar` button style dim themselves.
         // Too much content for the width spills to the right and is clipped,
         // never leftwards into the window buttons. What to drop when narrow is
         // the app's call (ViewThatFits and friends).
         .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .clipped()
-        .padding(.leading, metrics.leadingInset)
         .padding(.trailing, 12)
-        .background {
-            ZStack {
-                backgroundView
-                    .allowsHitTesting(false)
-                // Starts just after the zoom button: anything under the close,
-                // minimise and zoom buttons would take their clicks.
-                WindowDragArea()
-                    .padding(.leading, max(0, metrics.leadingInset - TitlebarMetrics.gapAfterWindowButtons + 4))
-            }
-        }
-        .overlay(alignment: .bottom) {
-            if separator {
-                Rectangle()
-                    .fill(Color(nsColor: .separatorColor))
-                    .frame(height: 1)
-            }
-        }
+        // Empty parts of the bar drag the window and double-click to zoom.
+        .background(WindowDragArea())
         .environment(\.titlebarSize, size)
+    }
+
+    private var barBackground: some View {
+        backgroundView
+            .overlay(alignment: .bottom) {
+                if separator {
+                    Rectangle()
+                        .fill(Color(nsColor: .separatorColor))
+                        .frame(height: 1)
+                }
+            }
     }
 
     @ViewBuilder private var backgroundView: some View {

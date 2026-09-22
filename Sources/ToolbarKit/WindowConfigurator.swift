@@ -29,17 +29,21 @@ extension TitlebarMetrics {
 /// window's view hierarchy is moved or looked up by class name.
 struct WindowConfigurator: NSViewRepresentable {
     let size: TitlebarSize
+    /// The bar's interactive content, hosted in the titlebar itself.
+    let bar: AnyView
     let onChange: (TitlebarMetrics) -> Void
 
     func makeNSView(context: Context) -> WindowObserverView {
         let view = WindowObserverView()
         view.size = size
         view.onChange = onChange
+        view.barHost.rootView = bar
         return view
     }
 
     func updateNSView(_ view: WindowObserverView, context: Context) {
         view.onChange = onChange
+        view.barHost.rootView = bar
         if view.size != size {
             view.size = size
             view.configure()
@@ -56,6 +60,14 @@ final class WindowObserverView: NSView {
     /// The last height measured outside full screen, where the toolbar moves
     /// into a window of its own and the content's titlebar band is empty.
     private var windowedHeight: CGFloat = 0
+
+    /// The bar's content, in a titlebar accessory rather than over the window's
+    /// content. While the app is active the titlebar takes every click in its
+    /// band, whatever is drawn there, so controls laid over it from the content
+    /// view could not be clicked. Views in an accessory are the titlebar's own,
+    /// and AppKit delivers their clicks as it does anywhere else.
+    let barHost = NSHostingView(rootView: AnyView(EmptyView()))
+    private let accessory = NSTitlebarAccessoryViewController()
 
     override func viewDidMoveToWindow() {
         super.viewDidMoveToWindow()
@@ -86,6 +98,12 @@ final class WindowObserverView: NSView {
             window.toolbar = TitlebarSizingToolbar()
         }
         window.toolbarStyle = size.toolbarStyle
+        if !window.titlebarAccessoryViewControllers.contains(accessory) {
+            barHost.sizingOptions = []
+            accessory.view = barHost
+            accessory.layoutAttribute = .leading
+            window.addTitlebarAccessoryViewController(accessory)
+        }
         // The height settles after the titlebar's next layout pass.
         DispatchQueue.main.async { [weak self] in self?.measure() }
     }
@@ -102,6 +120,13 @@ final class WindowObserverView: NSView {
         let zoom = window.standardWindowButton(.zoomButton)
         let zoomMaxX = (fullScreen || zoom?.isHidden != false) ? nil : zoom.map { $0.convert($0.bounds, to: nil).maxX }
         let metrics = TitlebarMetrics(height: height, leadingInset: TitlebarMetrics.leadingInset(zoomButtonMaxX: zoomMaxX))
+        // From where the titlebar put the accessory, after the window buttons,
+        // to the window's trailing edge.
+        let barMinX = barHost.window == nil ? metrics.leadingInset : barHost.convert(barHost.bounds, to: nil).minX
+        let barWidth = max(0, window.frame.width - barMinX)
+        if barHost.frame.size != CGSize(width: barWidth, height: height) {
+            barHost.setFrameSize(CGSize(width: barWidth, height: height))
+        }
         guard metrics != lastMetrics else { return }
         lastMetrics = metrics
         onChange(metrics)

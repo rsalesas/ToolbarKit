@@ -31,7 +31,7 @@ On macOS the top of a window belongs to the system, and there are only two usual
 
   Most fixes reach into AppKit's private view hierarchy, and that breaks between releases.
 
-ToolbarKit takes a third route. The window keeps a real titlebar with an **empty** system toolbar in it. The toolbar has no items, so there is nothing to draw glass on. Its only job is to set the titlebar's height, so **macOS itself places and centres the window buttons** at either size, through resizing and full screen. Your content is ordinary SwiftUI laid over that band.
+ToolbarKit takes a third route. The window keeps a real titlebar with an **empty** system toolbar in it. The toolbar has no items, so there is nothing to draw glass on. Its only job is to set the titlebar's height, so **macOS itself places and centres the window buttons** at either size, through resizing and full screen. Your content is ordinary SwiftUI, hosted in a titlebar accessory view after the window buttons, so the titlebar delivers clicks to it as it does to its own controls. The background and separator are drawn in the band from the window's content.
 
 No view in the window's hierarchy is moved, restyled or looked up by class name. Everything is public API.
 
