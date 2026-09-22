@@ -72,12 +72,14 @@ public struct TitlebarButtonStyle: ButtonStyle {
         @State private var hovering = false
         @Environment(\.isEnabled) private var isEnabled
         @Environment(\.titlebarSize) private var size
+        @Environment(\.appearsActive) private var appearsActive
 
         var body: some View {
             configuration.label
                 .labelStyle(.iconOnly)
                 .font(.system(size: size == .small ? 14 : 16))
                 .foregroundStyle(isEnabled ? .primary : .tertiary)
+                .opacity(appearsActive ? 1 : 0.5)   // dims with the window, as the bar used to
                 .frame(minWidth: size == .small ? 26 : 32, minHeight: size == .small ? 22 : 28)
                 .padding(.horizontal, 2)
                 .background {

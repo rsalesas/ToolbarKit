@@ -50,7 +50,7 @@ No view in the window's hierarchy is moved, restyled or looked up by class name.
 - **Window behaviour:**
   - dragging any empty part of the bar moves the window;
   - double-clicking it zooms or minimises, following the user's choice in System Settings;
-  - the bar dims when the window is inactive;
+  - the title and `.titlebar` buttons dim when the window is inactive, and system controls show their own inactive look;
   - in full screen the bar stays at the top.
 - **`.buttonStyle(.titlebar)`**: borderless buttons in the pre-glass style, with a soft highlight on hover and press.
 - **Narrow windows.** Content that doesn't fit is clipped on the right and never pushed into the window buttons. What to drop at narrow widths is up to your layout (`ViewThatFits` and friends).

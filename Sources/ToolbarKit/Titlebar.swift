@@ -70,11 +70,13 @@ public extension View {
 
 private struct TitlebarTitleModifier: ViewModifier {
     @Environment(\.titlebarSize) private var size
+    @Environment(\.appearsActive) private var appearsActive
 
     func body(content: Content) -> some View {
         content
             .font(.system(size: size.titlePointSize, weight: size.titleWeight))
             .lineLimit(1)
+            .opacity(appearsActive ? 1 : 0.5)
     }
 }
 
@@ -85,7 +87,6 @@ private struct TitlebarModifier<Bar: View>: ViewModifier {
     let bar: Bar
 
     @State private var metrics = TitlebarMetrics()
-    @Environment(\.appearsActive) private var appearsActive
 
     func body(content: Content) -> some View {
         // The content keeps the safe area macOS gives it, which is the
@@ -104,7 +105,12 @@ private struct TitlebarModifier<Bar: View>: ViewModifier {
         HStack(spacing: 8) {
             bar
         }
-        .opacity(appearsActive ? 1 : 0.5)
+        // No `.opacity` here to dim the bar when the window is inactive. SwiftUI
+        // draws the AppKit views under a partly transparent view (segmented
+        // pickers, text fields, bordered buttons) through a layer of its own and
+        // then never hit-tests them, so they stopped taking clicks. System
+        // controls draw their own inactive look; `titlebarTitle()` and the
+        // `.titlebar` button style dim themselves.
         // Too much content for the width spills to the right and is clipped,
         // never leftwards into the window buttons. What to drop when narrow is
         // the app's call (ViewThatFits and friends).
