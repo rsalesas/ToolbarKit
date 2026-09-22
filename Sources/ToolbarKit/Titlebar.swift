@@ -82,6 +82,22 @@ private struct TitlebarTitleModifier: ViewModifier {
     }
 }
 
+/// The bar's content as hosted in the titlebar: the modifier's environment,
+/// except whether the window is active, which is read where the bar actually
+/// is. Copied from the content, it was sometimes left stale and the bar stayed
+/// dimmed in an active window.
+private struct HostedBar: View {
+    let content: AnyView
+    let environment: EnvironmentValues
+    @Environment(\.appearsActive) private var appearsActive
+
+    var body: some View {
+        content
+            .environment(\.self, environment)
+            .environment(\.appearsActive, appearsActive)
+    }
+}
+
 private struct TitlebarModifier<Bar: View>: ViewModifier {
     let size: TitlebarSize
     let background: TitlebarBackground
@@ -104,7 +120,7 @@ private struct TitlebarModifier<Bar: View>: ViewModifier {
                     .offset(y: -metrics.height)
                     .allowsHitTesting(false)
             }
-            .background(WindowConfigurator(size: size, bar: AnyView(barContent.environment(\.self, environment))) { metrics = $0 })
+            .background(WindowConfigurator(size: size, bar: AnyView(HostedBar(content: AnyView(barContent), environment: environment))) { metrics = $0 })
     }
 
     private var barContent: some View {
