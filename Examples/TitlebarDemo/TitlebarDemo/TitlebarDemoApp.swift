@@ -16,7 +16,8 @@ struct TitlebarDemoApp: App {
 /// Launch arguments set the starting state, for screenshots:
 /// `-size small|large`, `-appearance light|dark`, `-separator NO`,
 /// `-background titlebar|solid|translucent|thin|regular|bar|clear`, `-window opaque|translucent`,
-/// `-scroll <row>` to start scrolled so that row sits under the bar.
+/// `-scroll <row>` to start scrolled so that row sits under the bar,
+/// `-titleFirst YES` to start the bar with the title instead of back and forward.
 struct DemoView: View {
     private static let defaults = UserDefaults.standard
     @State private var size = TitlebarSize(rawValue: defaults.string(forKey: "size") ?? "") ?? .large
@@ -26,6 +27,7 @@ struct DemoView: View {
     @State private var translucentWindow = defaults.string(forKey: "window") == "translucent"
     @State private var query = ""
     @State private var lastAction = "nothing yet"
+    private let titleFirst = defaults.bool(forKey: "titleFirst")
 
     var body: some View {
         ScrollViewReader { proxy in
@@ -44,8 +46,10 @@ struct DemoView: View {
             }
         }
         .titlebar(size, background: titlebarBackground, separator: separator) {
-            Button("Back", systemImage: "chevron.left") { lastAction = "Back" }
-            Button("Forward", systemImage: "chevron.right") { lastAction = "Forward" }
+            if !titleFirst {
+                Button("Back", systemImage: "chevron.left") { lastAction = "Back" }
+                Button("Forward", systemImage: "chevron.right") { lastAction = "Forward" }
+            }
             Text("Inbox").titlebarTitle()
             Spacer()
             Button("Compose", systemImage: "square.and.pencil") { lastAction = "Compose" }

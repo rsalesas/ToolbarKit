@@ -132,6 +132,7 @@ private struct TitlebarModifier<Bar: View>: ViewModifier {
         // the app's call (ViewThatFits and friends).
         .frame(minWidth: 0, maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .clipped()
+        .padding(.leading, metrics.contentPadding)
         .padding(.trailing, 12)
         // Empty parts of the bar drag the window and double-click to zoom.
         .background(WindowDragArea())

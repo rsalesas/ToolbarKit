@@ -6,12 +6,17 @@ struct TitlebarMetrics: Equatable {
     /// The titlebar's height: window height minus the content layout height.
     var height: CGFloat = 0
     /// Where the bar's content may start: after the zoom button.
-    var leadingInset: CGFloat = 12
+    var leadingInset: CGFloat = 16
+    /// Padding before the bar's content, so it starts `gapAfterWindowButtons`
+    /// after the zoom button wherever the titlebar placed the accessory.
+    var contentPadding: CGFloat = 0
 }
 
 extension TitlebarMetrics {
     /// The gap between the zoom button and the bar's first item.
-    static let gapAfterWindowButtons: CGFloat = 12
+    /// Clearly wider than the 9 pt between the window buttons themselves, so a
+    /// title does not read as a fourth button.
+    static let gapAfterWindowButtons: CGFloat = 16
 
     /// `zoomButtonMaxX` is nil when the buttons are hidden (full screen).
     static func leadingInset(zoomButtonMaxX: CGFloat?) -> CGFloat {
@@ -119,11 +124,12 @@ final class WindowObserverView: NSView {
         }
         let zoom = window.standardWindowButton(.zoomButton)
         let zoomMaxX = (fullScreen || zoom?.isHidden != false) ? nil : zoom.map { $0.convert($0.bounds, to: nil).maxX }
-        let metrics = TitlebarMetrics(height: height, leadingInset: TitlebarMetrics.leadingInset(zoomButtonMaxX: zoomMaxX))
+        var metrics = TitlebarMetrics(height: height, leadingInset: TitlebarMetrics.leadingInset(zoomButtonMaxX: zoomMaxX))
         // From where the titlebar put the accessory, after the window buttons,
         // to the window's trailing edge.
         let barMinX = barHost.window == nil ? metrics.leadingInset : barHost.convert(barHost.bounds, to: nil).minX
         let barWidth = max(0, window.frame.width - barMinX)
+        metrics.contentPadding = max(0, metrics.leadingInset - barMinX)
         if barHost.frame.size != CGSize(width: barWidth, height: height) {
             barHost.setFrameSize(CGSize(width: barWidth, height: height))
         }
