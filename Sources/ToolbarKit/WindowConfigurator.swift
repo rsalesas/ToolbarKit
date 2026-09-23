@@ -93,7 +93,12 @@ final class WindowObserverView: NSView {
     }
 
     func configure() {
-        guard let window else { return }
+        // Only a titled window has a titlebar to configure. AppKit throws
+        // (NSInternalInconsistencyException) when a titlebar accessory is added to a
+        // borderless window, and that is where a view ends up when it is hosted
+        // off-screen — a snapshot, a smoke test — or in a custom panel. There the bar
+        // simply has nowhere to go, which is not worth crashing the app over.
+        guard let window, window.styleMask.contains(.titled) else { return }
         window.styleMask.insert(.fullSizeContentView)
         window.titlebarAppearsTransparent = true
         window.titleVisibility = .hidden
